@@ -20,7 +20,7 @@ class Relay
   public:
     Relay(int pin) {
       m_pin = pin;
-      m_isRunning = false;
+      m_isRunning = true;
 
       m_cycleCount = 0;
     };
@@ -35,9 +35,9 @@ class Relay
     };
 
     String getStateStr() {
-      if(m_isRunning){
+      if (m_isRunning) {
         return "ON";
-      }else{
+      } else {
         return "OFF";
       }
     }
@@ -55,9 +55,10 @@ class Relay
     }
 
     void set(boolean state) {
-      m_isRunning  = state;
-
-      m_isRunning ? setOn() : setOff();
+      if (state != m_isRunning) {
+        m_isRunning = state;
+        m_isRunning ? setOn() : setOff();
+      }
     }
 
     void setOn() {

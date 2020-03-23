@@ -17,11 +17,15 @@ class HTSensor
   public:
     HTSensor(int pin) {
       m_pin = pin;
+    }
 
+    void init() {
       sensor = new SHT35(m_pin);
+      sensor->init();
     }
 
     float getH() {
+      //return 40.0;
       return m_hum;
     }
 

@@ -9,6 +9,9 @@ class PressureSensor
     const float UPPER_VOLTS =  4.5; //UPPER READING (VOLTS)
     const float LOWER_VOLTS =  0.5; //LOWER READING (VOLTS)
 
+    const float UPPER_READ =  850; //UPPER READING (VOLTS)
+    const float LOWER_READ =  100; //LOWER READING (VOLTS)
+
     const float UPPER_PSI =  150;   //UPPER READING (PSI)
     const float LOWER_PSI =  0;     //LOWER READING (PSI)
 
@@ -16,7 +19,7 @@ class PressureSensor
     int m_pin;
 
     float scale(float input) {
-      return map(input, LOWER_VOLTS, UPPER_VOLTS, LOWER_PSI, UPPER_PSI);
+      return map(input, LOWER_READ, UPPER_READ, LOWER_PSI, UPPER_PSI);
     }
     
   public:
@@ -26,6 +29,10 @@ class PressureSensor
 
     float getPSI() {
       return scale( analogRead(m_pin) );
+    }
+    
+    float getRaw() {
+      return analogRead(m_pin);
     }
 
 

@@ -17,24 +17,24 @@
 
 #define PRESSURE_PIN  A1
 #define SHT35_PIN     A5
-#define COMPRESSOR_PIN  4
-#define STORAGE_PIN  5
-#define DRYER_PIN  6
+#define STORAGE_PIN  2
+#define COMPRESSOR_PIN  3
+#define DRYER_PIN  4
 
 /* ********** COMPRESSOR LIMITS ********** */
-#define MIN_PRESSURE 100
-#define MAX_PRESSURE 120
+#define MIN_PRESSURE 50
+#define MAX_PRESSURE 70
 
 /* ********** DRYER CYCLE LIMITS ********** */
-#define START_DRY_PRESSURE 110
-#define STOP_DRY_PRESSURE  20
+#define START_DRY_PRESSURE 60
+#define STOP_DRY_PRESSURE  30
 
 /* ********** HUMIDITY LIMITS ********** */
 #define STOP_HUMIDITY  1
-#define START_HUMIDITY 5
+#define START_HUMIDITY 2
 
 /* ********** DRYER CYCLE LIMITS ********** */
-#define CYCLE_SWITCH_LIMIT 5
+#define CYCLE_SWITCH_LIMIT 2
 
 
 HTSensor htSensor(SHT35_PIN);
@@ -42,7 +42,7 @@ PressureSensor pressure(PRESSURE_PIN);
 
 Relay compressor(COMPRESSOR_PIN);
 Relay storageValve(STORAGE_PIN);
-Relay dryerValve(STORAGE_PIN);
+Relay dryerValve(DRYER_PIN);
 
 
 State::state currentState;
@@ -54,13 +54,16 @@ void setup()
   Serial.println("********** METAFORM DRYBOX: INIT **********");
   currentState = State::STEADY;
 
+  htSensor.init();
   compressor.init();
+  storageValve.init();
+  dryerValve.init();
 
   Serial.println("********** METAFORM DRYBOX: INIT COMPLETE **********");
   Serial.println();
   Serial.println();
 
-  Serial.println("Humidity (%), Temperature (C), PSI, Compressor, Storage, Dryer, State");
+  Serial.println("Humidity (%), Temperature (C), PSI, Compressor, Storage, Dryer, State, Duration");
 }
 
 
@@ -83,7 +86,7 @@ void loop()
      Dryer Control
       Switch which dryer tube we use.
   */
-  if (storageValve.getCycleCount() > CYCLE_SWITCH_LIMIT ) {
+  if (storageValve.getCycleCount() >= CYCLE_SWITCH_LIMIT ) {
     dryerValve.toggle();
     storageValve.resetCycleCount();
   }
@@ -97,7 +100,7 @@ void loop()
       if (htSensor.getH() > START_HUMIDITY) {
         currentState = State::DRYING;
       } else if (!compressor.getState()) {
-        delay(5000);
+        //delay(5000);
       }
       break;
     case State::DRYING:
@@ -115,7 +118,8 @@ void loop()
       break;
   }
 
-  Serial.println(String(htSensor.getH()) + ", " + String(htSensor.getT()) + ", " + currentPSI + ", " + compressor.getStateStr() + ", " + storageValve.getStateStr() + ", " + dryerValve.getStateStr() + ", " + State::toString(currentState) );
+  int duration_s = millis() / 1000;
+  Serial.println(String(htSensor.getH()) + ", " + String(htSensor.getT()) + ", " + currentPSI + ", " + compressor.getStateStr() + ", " + storageValve.getStateStr() + ", " + dryerValve.getStateStr() + ", " + State::toString(currentState) + ", " + pressure.getRaw() + ", " + String(duration_s) );
 
   delay(250);
 }
